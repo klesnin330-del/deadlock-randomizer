@@ -4,10 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Deadlock Hero Randomizer</title>
+    <!-- Иконка страницы -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔮</text></svg>">
+    <!-- Шрифты -->
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Raleway:wght@300;400;600&display=swap" rel="stylesheet">
+    
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Raleway:wght@300;400;600&display=swap');
-
+        /* ── Основные стили ── */
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
@@ -20,8 +23,10 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
+            padding: 20px 0;
         }
 
+        /* Фоновый градиент */
         .bg-layer {
             position: fixed;
             inset: 0;
@@ -38,6 +43,7 @@
             100% { opacity: 1;  filter: hue-rotate(30deg); }
         }
 
+        /* Частицы на фоне */
         .particles {
             position: fixed; inset: 0; z-index: 0;
             overflow: hidden; pointer-events: none;
@@ -59,12 +65,14 @@
             100% { transform: translateY(-10vh) scale(1); opacity: 0; }
         }
 
+        /* Контейнер */
         .container {
             position: relative; z-index: 1;
-            width: 90%; max-width: 700px;
+            width: 95%; max-width: 1000px;
             text-align: center;
         }
 
+        /* Заголовки */
         .title {
             font-family: 'Cinzel', serif;
             font-size: clamp(1.8rem, 5vw, 3rem);
@@ -90,12 +98,13 @@
             color: rgba(196, 181, 253, .5);
             letter-spacing: 6px;
             text-transform: uppercase;
-            margin-bottom: 40px;
+            margin-bottom: 30px;
         }
 
+        /* Выбор количества */
         .selector-group {
             display: flex; align-items: center; justify-content: center;
-            gap: 14px; margin-bottom: 36px; flex-wrap: wrap;
+            gap: 14px; margin-bottom: 30px; flex-wrap: wrap;
         }
 
         .selector-group label {
@@ -131,13 +140,34 @@
             color: #fff;
         }
 
+        /* Контейнер слотов */
+        .slots-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            margin-bottom: 30px;
+            align-items: center;
+        }
+
+        .slot-wrapper {
+            width: 100%;
+            max-width: 500px;
+            opacity: 0;
+            transform: scale(0.9);
+            animation: slotAppear 0.4s cubic-bezier(.22, 1, .36, 1) forwards;
+        }
+
+        @keyframes slotAppear {
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        /* Рамка слота */
         .slot-frame {
             position: relative;
             background: linear-gradient(145deg, rgba(30, 27, 56, .6), rgba(15, 12, 30, .8));
             border: 1px solid rgba(139, 92, 246, .25);
             border-radius: 20px;
             padding: 4px;
-            margin-bottom: 36px;
             box-shadow: 0 0 40px rgba(88, 28, 135, .15),
                         inset 0 0 60px rgba(88, 28, 135, .05);
         }
@@ -149,6 +179,7 @@
             position: relative;
         }
 
+        /* Затемнение верха и низа слота */
         .slot-inner::before,
         .slot-inner::after {
             content: '';
@@ -166,6 +197,7 @@
             background: linear-gradient(to top, rgba(10, 10, 20, 1), transparent);
         }
 
+        /* Центральная линия */
         .highlight-line {
             position: absolute;
             top: 50%; left: 0; right: 0;
@@ -207,6 +239,7 @@
                          0 0 40px rgba(139, 92, 246, .4);
         }
 
+        /* Кнопка генерации */
         .generate-btn {
             position: relative;
             padding: 16px 60px;
@@ -220,6 +253,7 @@
             cursor: pointer;
             transition: all .3s ease;
             overflow: hidden;
+            margin-bottom: 40px;
         }
 
         .generate-btn::before {
@@ -241,56 +275,102 @@
         }
 
         .generate-btn:active { transform: translateY(0); }
+        .generate-btn:disabled { opacity: .5; cursor: not-allowed; transform: none; }
 
-        .generate-btn:disabled {
-            opacity: .5; cursor: not-allowed; transform: none;
+        /* Результаты с фото */
+        .hero-display {
+            margin-top: 20px;
+            display: none;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+            padding-bottom: 20px;
         }
 
-        .results { margin-top: 36px; min-height: 40px; }
+        .hero-display.active { display: flex; }
 
-        .result-cards {
-            display: flex; flex-wrap: wrap;
-            justify-content: center; gap: 14px;
+        .hero-card {
+            background: linear-gradient(145deg, rgba(30, 27, 56, .8), rgba(15, 12, 30, .9));
+            border: 2px solid rgba(139, 92, 246, .4);
+            border-radius: 16px;
+            padding: 16px;
+            text-align: center;
+            animation: heroAppear 0.5s cubic-bezier(.22, 1, .36, 1) both;
+            box-shadow: 0 8px 32px rgba(88, 28, 135, .3);
+            min-width: 220px;
+            transition: transform 0.3s ease;
         }
 
-        .result-card {
-            padding: 14px 28px;
-            background: linear-gradient(135deg, rgba(88, 28, 135, .25), rgba(30, 27, 56, .4));
-            border: 1px solid rgba(139, 92, 246, .3);
-            border-radius: 14px;
-            font-family: 'Cinzel', serif;
-            font-size: 1.05rem; font-weight: 700;
-            letter-spacing: 2px; text-transform: uppercase;
-            color: #e9d5ff;
-            animation: cardAppear .5s cubic-bezier(.22, 1, .36, 1) both;
-            box-shadow: 0 4px 24px rgba(88, 28, 135, .2);
+        .hero-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(168, 130, 255, .8);
         }
 
-        @keyframes cardAppear {
-            from { opacity: 0; transform: scale(.8) translateY(10px); }
-            to   { opacity: 1; transform: scale(1) translateY(0); }
+        @keyframes heroAppear {
+            from { opacity: 0; transform: scale(0.8) translateY(20px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
         }
 
-        .result-card .rarity-glow {
+        .hero-image-container {
+            width: 180px;
+            height: 180px;
+            margin: 0 auto 12px auto;
+            border-radius: 12px;
+            border: 2px solid rgba(168, 130, 255, .3);
+            overflow: hidden;
+            background: rgba(0,0,0,0.3);
+            position: relative;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, .4);
+        }
+
+        .hero-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
             display: block;
-            margin-top: 6px;
-            font-size: .7rem;
-            letter-spacing: 4px;
-            color: rgba(196, 181, 253, .4);
-            font-weight: 400;
+        }
+        
+        .hero-image-placeholder {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            background: linear-gradient(135deg, rgba(30, 27, 56, .8), rgba(10, 10, 20, .9));
+            color: rgba(196, 181, 253, .3);
+            display: none; /* Скрыто по умолчанию */
+        }
+
+        .hero-name {
+            font-family: 'Cinzel', serif;
+            font-size: 1.2rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            color: #e9d5ff;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+        }
+
+        .hero-rarity {
+            font-size: 0.75rem;
+            letter-spacing: 3px;
+            color: rgba(196, 181, 253, .5);
+            text-transform: uppercase;
         }
 
         .footer {
-            margin-top: 50px;
             font-size: .75rem;
             color: rgba(196, 181, 253, .2);
             letter-spacing: 3px;
         }
 
-        @media (max-width: 500px) {
+        @media (max-width: 600px) {
             .slot-viewport { height: 224px; }
             .slot-item { height: 56px; font-size: .95rem; }
             .count-btn { width: 42px; height: 42px; font-size: 1rem; }
+            .hero-card { min-width: 160px; }
+            .hero-image-container { width: 140px; height: 140px; }
         }
     </style>
 </head>
@@ -312,41 +392,79 @@
         <button class="count-btn" data-count="5">5</button>
     </div>
 
-    <div class="slot-frame">
-        <div class="slot-inner">
-            <div class="highlight-line"></div>
-            <div class="slot-viewport">
-                <div class="slot-strip" id="slotStrip"></div>
-            </div>
-        </div>
-    </div>
+    <div class="slots-container" id="slotsContainer"></div>
 
     <button class="generate-btn" id="generateBtn">⚡ Ролл ⚡</button>
 
-    <div class="results" id="results"></div>
+    <div class="hero-display" id="heroDisplay"></div>
 
     <p class="footer">May the void decide your fate</p>
 </div>
 
 <script>
+    // ── Список всех 38 героев ──
     const HEROES = [
         "Abrams","Apollo","Bebop","Billy","The Doorman","Drifter",
         "Dynamo","Grey Talon","Infernus","Kelvin","Lash","Mirage",
-        "Mo & Krill","Rem","Seven","Shiv","Venator","Victor",
-        "Viscous","Warden","Calico","Celeste","Graves","Haze",
-        "Holliday","Ivy","Lady Geist","McGinnis","Mina","Paige",
-        "Paradox","Silver","Vindicta","Vyper","Wraith","Yamato"
+        "Mo & Krill","Pocket","Rem","Seven","Shiv","Sinclair",
+        "Venator","Victor","Viscous","Warden","Calico","Celeste",
+        "Graves","Haze","Holliday","Ivy","Lady Geist","McGinnis",
+        "Mina","Paige","Paradox","Silver","Vindicta","Vyper",
+        "Wraith","Yamato"
     ];
+
+    // ── Маппинг имен для файлов ──
+    // Формат: "Имя героя": "имя_файла" (без расширения)
+    const HERO_FILENAMES = {
+        "Abrams": "abrams",
+        "Apollo": "apollo",
+        "Bebop": "bebop",
+        "Billy": "billy",
+        "The Doorman": "the-doorman",
+        "Drifter": "drifter",
+        "Dynamo": "dynamo",
+        "Grey Talon": "grey-talon",
+        "Infernus": "infernus",
+        "Kelvin": "kelvin",
+        "Lash": "lash",
+        "Mirage": "mirage",
+        "Mo & Krill": "mo-and-krill",
+        "Pocket": "pocket",
+        "Rem": "rem",
+        "Seven": "seven",
+        "Shiv": "shiv",
+        "Sinclair": "sinclair",
+        "Venator": "venator",
+        "Victor": "victor",
+        "Viscous": "viscous",
+        "Warden": "warden",
+        "Calico": "calico",
+        "Celeste": "celeste",
+        "Graves": "graves",
+        "Haze": "haze",
+        "Holliday": "holliday",
+        "Ivy": "ivy",
+        "Lady Geist": "lady-geist",
+        "McGinnis": "mcginnis",
+        "Mina": "mina",
+        "Paige": "paige",
+        "Paradox": "paradox",
+        "Silver": "silver",
+        "Vindicta": "vindicta",
+        "Vyper": "vyper",
+        "Wraith": "wraith",
+        "Yamato": "yamato"
+    };
 
     const ITEM_HEIGHT = 56;
     let selectedCount = 1;
     let isSpinning = false;
 
-    const stripEl = document.getElementById('slotStrip');
+    const slotsContainer = document.getElementById('slotsContainer');
     const btnEl = document.getElementById('generateBtn');
-    const resultsEl = document.getElementById('results');
+    const heroDisplay = document.getElementById('heroDisplay');
 
-    // ── Particles ──
+    // ── Создание частиц ─
     (function createParticles() {
         const container = document.getElementById('particles');
         for (let i = 0; i < 30; i++) {
@@ -360,18 +478,44 @@
         }
     })();
 
-    // ── Count buttons ──
+    // ── Кнопки выбора количества ──
     document.querySelectorAll('.count-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             if (isSpinning) return;
             document.querySelectorAll('.count-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
             selectedCount = parseInt(btn.dataset.count);
+            createSlots(selectedCount);
         });
     });
 
-    // ── Build strip ──
-    function buildStrip(finalHeroes) {
+    // ── Создание слотов ──
+    function createSlots(count) {
+        slotsContainer.innerHTML = '';
+        heroDisplay.classList.remove('active');
+        heroDisplay.innerHTML = '';
+
+        for (let i = 0; i < count; i++) {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'slot-wrapper';
+            wrapper.style.animationDelay = `${i * 0.1}s`;
+            wrapper.innerHTML = `
+                <div class="slot-frame">
+                    <div class="slot-inner">
+                        <div class="highlight-line"></div>
+                        <div class="slot-viewport">
+                            <div class="slot-strip" id="strip-${i}"></div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            slotsContainer.appendChild(wrapper);
+        }
+    }
+
+    // ── Заполнение ленты слота ──
+    function buildStrip(stripId, finalHero) {
+        const stripEl = document.getElementById(stripId);
         stripEl.innerHTML = '';
         stripEl.style.transition = 'none';
         stripEl.style.transform = 'translateY(0)';
@@ -382,10 +526,7 @@
         for (let i = 0; i < padCount; i++) {
             items.push(HEROES[Math.floor(Math.random() * HEROES.length)]);
         }
-
-        for (const h of finalHeroes) {
-            items.push(h);
-        }
+        items.push(finalHero);
 
         items.forEach(name => {
             const div = document.createElement('div');
@@ -394,31 +535,31 @@
             stripEl.appendChild(div);
         });
 
-        return items;
+        return items.length;
     }
 
-    // ── Spin ──
+    // ── Ролл ──
     function spin() {
         if (isSpinning) return;
         isSpinning = true;
         btnEl.disabled = true;
-        resultsEl.innerHTML = '';
+        heroDisplay.classList.remove('active');
+        heroDisplay.innerHTML = '';
 
+        // Выбираем победителей
         const winners = [];
         for (let i = 0; i < selectedCount; i++) {
             winners.push(HEROES[Math.floor(Math.random() * HEROES.length)]);
         }
 
-        const items = buildStrip(winners);
-        const totalItems = items.length;
+        // Строим ленты
+        const totalItemsArray = [];
+        for (let i = 0; i < selectedCount; i++) {
+            const total = buildStrip(`strip-${i}`, winners[i]);
+            totalItemsArray.push(total);
+        }
 
-        const viewportHeight = document.querySelector('.slot-viewport').offsetHeight;
-        const centerOffset = viewportHeight / 2 - ITEM_HEIGHT / 2;
-        const winnerIndex = totalItems - selectedCount;
-        const targetY = -(winnerIndex * ITEM_HEIGHT) + centerOffset;
-
-        void stripEl.offsetHeight;
-
+        // Анимация
         const duration = 2500;
         const startTime = performance.now();
 
@@ -430,20 +571,32 @@
             const elapsed = now - startTime;
             const progress = Math.min(elapsed / duration, 1);
             const eased = easeOutCubic(progress);
-            const currentY = targetY * eased;
-            stripEl.style.transform = `translateY(${currentY}px)`;
+
+            for (let i = 0; i < selectedCount; i++) {
+                const stripEl = document.getElementById(`strip-${i}`);
+                const viewportHeight = stripEl.parentElement.offsetHeight;
+                const centerOffset = viewportHeight / 2 - ITEM_HEIGHT / 2;
+                const winnerIndex = totalItemsArray[i] - 1;
+                const targetY = -(winnerIndex * ITEM_HEIGHT) + centerOffset;
+                const currentY = targetY * eased;
+                
+                stripEl.style.transform = `translateY(${currentY}px)`;
+            }
 
             if (progress < 1) {
                 requestAnimationFrame(animate);
             } else {
-                const itemEls = stripEl.querySelectorAll('.slot-item');
+                // Подсветка победителей
                 for (let i = 0; i < selectedCount; i++) {
-                    const idx = totalItems - selectedCount + i;
-                    if (itemEls[idx]) itemEls[idx].classList.add('winner');
+                    const stripEl = document.getElementById(`strip-${i}`);
+                    const itemEls = stripEl.querySelectorAll('.slot-item');
+                    const lastItem = itemEls[itemEls.length - 1];
+                    if (lastItem) lastItem.classList.add('winner');
                 }
 
+                // Показ карточек с фото
                 setTimeout(() => {
-                    showResults(winners);
+                    showHeroCards(winners);
                     isSpinning = false;
                     btnEl.disabled = false;
                 }, 300);
@@ -453,23 +606,44 @@
         requestAnimationFrame(animate);
     }
 
-    function showResults(winners) {
-        const container = document.createElement('div');
-        container.className = 'result-cards';
-
+    // ── Отображение карточек героев ──
+    function showHeroCards(winners) {
+        heroDisplay.innerHTML = '';
+        
         winners.forEach((hero, i) => {
             const card = document.createElement('div');
-            card.className = 'result-card';
-            card.style.animationDelay = `${i * 0.12}s`;
-            card.innerHTML = `${hero}<span class="rarity-glow">✦ summoned ✦</span>`;
-            container.appendChild(card);
+            card.className = 'hero-card';
+            card.style.animationDelay = `${i * 0.15}s`;
+            
+            const filename = HERO_FILENAMES[hero];
+            // Пытаемся загрузить jpg, если нет - png, потом webp.
+            // Здесь используем простую логику: если картинка не грузится, показываем заглушку.
+            const imageUrl = `images/${filename}.jpg`; 
+            
+            card.innerHTML = `
+                <div class="hero-image-container">
+                    <img src="${imageUrl}" 
+                         alt="${hero}" 
+                         class="hero-image"
+                         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                    <div class="hero-image-placeholder">🎲</div>
+                </div>
+                <div class="hero-name">${hero}</div>
+                <div class="hero-rarity">✦ summoned ✦</div>
+            `;
+            
+            heroDisplay.appendChild(card);
         });
-
-        resultsEl.appendChild(container);
+        
+        heroDisplay.classList.add('active');
     }
+
+    // Инициализация (1 слот при загрузке)
+    createSlots(1);
 
     btnEl.addEventListener('click', spin);
 
+    // Ролл по пробелу или Enter
     document.addEventListener('keydown', e => {
         if (e.code === 'Space' || e.code === 'Enter') {
             e.preventDefault();
